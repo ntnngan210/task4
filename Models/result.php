@@ -1,9 +1,10 @@
-<?php 
-$result = $this->conn->query($query);
-
+<?php
+$cmd = $this->conn->prepare($query);
+$cmd->execute();
+$result = $cmd->fetchAll();
 $data = array();
 
-while ($row = $result->fetch_assoc()) {
+foreach ($result as $row) {
     $data[] = $row;
 }
 ?>

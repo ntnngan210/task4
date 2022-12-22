@@ -1,23 +1,78 @@
-<?php 
-    class connection{
-        var $conn;
-        function __construct()
-        {
-            //Thong so ket noi CSDL
-            $severname ="localhost"; 
-            $username ="root";
-            $password =""; 
-            $db_name ="shopphone";
- 
-            //Tao ket noi CSDL
-            $this->conn = new mysqli($severname,$username,$password,$db_name);
-            $this->conn->set_charset("utf8");
 
-            //check connection
-            if ($this->conn->connect_error) {
-		        die("Connection failed: " . $this->conn->connect_error);
-		    }
+<?php
+class Database{
+    private $hostname;
+    private $username;
+    private $password;
+    private $dbname;
+    public function __construct($hostname,$username,$password,$dbname)
+    {
+        if(isset($hostname)){
+            $this->hostname = $hostname;
+        }
+        else{
+            $this->hostname = 'localhost';
+        }
+        if(isset($username)){
+            $this->username = $username;
+        }
+        else{
+            $this->username = 'root';
+        }
+        if(isset($password)){
+            $this->password = $password;
+        }
+        else{
+            $this->password = '';
+        }
+        if(isset($dbname)){
+            $this->dbname = $dbname;
+        }
+        else{
+            $this->dbname = 'shopphone';
         }
 
     }
+    public function gethostname(){
+        return $this->hostname;
+    }
+    public function sethostname($hostname){
+        $this->hostname = $hostname;
+    }
+    public function getusername(){
+        return $this->username;
+    }
+    public function setusername($username){
+        $this->username = $username;
+    }
+    public function getpassword(){
+        return $this->password;
+    }
+    public function setpassword($password){
+        $this->password = $password;
+    }
+    public function getdbname(){
+        return $this->dbname;
+    }
+    public function setdbname($dbname){
+        $this->dbname = $dbname;
+    }
+
+    public function getConnect(){
+        try {
+            $conn = new PDO("mysql:host=$this->hostname;dbname=$this->dbname", $this->username, $this->password);
+            // set the PDO error mode to exception
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            echo "Connected successfully";
+            return $conn;
+        } catch(PDOException $e) {
+            echo "Connection failed: " . $e->getMessage();
+        }
+    }
+
+    public function disConnect($connect){
+        return $connect->close();
+    }
+}
+
 ?>

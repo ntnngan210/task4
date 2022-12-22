@@ -1,15 +1,18 @@
 <?php
 require_once("connection.php");
+
 class Model
 {
     var $conn;
     var $table;
     var $contens;
+
     function __construct()
     {
-        $conn_obj = new Connection();
-        $this->conn = $conn_obj->conn;
+        $database = new Database(null, null, null, null);
+        $this->conn = $database->getConnect();
     }
+
     function All()
     {
         $query = "select * from $this->table ORDER BY $this->contens DESC ";
@@ -17,18 +20,23 @@ class Model
         require("result.php");
 
         return $data;
-        
+
     }
+
     function find($id)
     {
         $query = "select * from $this->table where $this->contens =$id";
-        return $this->conn->query($query)->fetch_assoc();
+        $cmd = $this->conn->prepare($query);
+        $cmd->execute();
+        return $cmd->fetch();
     }
+
     function delete($id)
     {
         $query = "DELETE from $this->table where $this->contens=$id";
-        
-        $status = $this->conn->query($query);
+
+        $cmd = $this->conn->prepare($query);
+        $status = $cmd->execute();
         if ($status == true) {
             setcookie('msg', 'Xóa thành công', time() + 2);
         } else {
@@ -36,6 +44,7 @@ class Model
         }
         header('Location: ?mod=' . $this->table);
     }
+
     function store($data)
     {
         $f = "";
@@ -48,7 +57,8 @@ class Model
         $v = trim($v, ",");
         $query = "INSERT INTO $this->table($f) VALUES ($v);";
 
-        $status = $this->conn->query($query);
+        $cmd = $this->conn->prepare($query);
+        $status = $cmd->execute();
 
         if ($status == true) {
             setcookie('msg', 'Thêm mới thành công', time() + 2);
@@ -58,6 +68,7 @@ class Model
             header('Location: ?mod=' . $this->table . '&act=add');
         }
     }
+
     function update($data)
     {
         $v = "";
@@ -69,8 +80,9 @@ class Model
 
         $query = "UPDATE $this->table SET  $v   WHERE $this->contens = " . $data[$this->contens];
 
-        $result = $this->conn->query($query);
-        
+        $cmd = $this->conn->prepare($query);
+        $result = $cmd->execute();
+
         if ($result == true) {
             setcookie('msg', 'Duyệt thành công', time() + 2);
             header('Location: ?mod=' . $this->table);

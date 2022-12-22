@@ -1,27 +1,32 @@
 <?php
 require_once("model.php");
+
 class Login extends Model
 {
     var $conn;
+
     function __construct()
     {
-        $conn_obj = new Connection();
-        $this->conn = $conn_obj->conn;
+        $database = new Database(null, null, null, null);
+        $this->conn = $database->getConnect();
     }
+
     function login_action($data)
     {
         $query = "SELECT * from nguoidung  WHERE taikhoan = '" . $data['taikhoan'] . "' AND matkhau = '" . $data['matkhau'] . "' AND trangthai = 1";
 
-        $login = $this->conn->query($query)->fetch_assoc();
+        $cmd = $this->conn->prepare($query);
+        $cmd->execute();
+        $login = $cmd->fetch();
         if ($login !== NULL) {
-            if($login['MaQuyen'] == 2){
+            if ($login['MaQuyen'] == 2) {
                 $_SESSION['isLogin_Admin'] = true;
                 $_SESSION['login'] = $login;
-            }else{
-                if($login['MaQuyen'] == 3){
-                $_SESSION['isLogin_Nhanvien'] = true;
-                $_SESSION['login'] = $login;
-                }else{
+            } else {
+                if ($login['MaQuyen'] == 3) {
+                    $_SESSION['isLogin_Nhanvien'] = true;
+                    $_SESSION['login'] = $login;
+                } else {
                     $_SESSION['isLogin'] = true;
                     $_SESSION['login'] = $login;
                 }
@@ -31,32 +36,35 @@ class Login extends Model
             setcookie('msg1', 'Đăng nhập không thành công', time() + 5);
             header('Location: ?act=taikhoan#dangnhap');
         }
-        
+
     }
+
     function logout()
     {
-        if(isset($_SESSION['isLogin_Admin'])){
+        if (isset($_SESSION['isLogin_Admin'])) {
             unset($_SESSION['isLogin_Admin']);
             unset($_SESSION['login']);
         }
-        if(isset($_SESSION['isLogin_Nhanvien'])){
+        if (isset($_SESSION['isLogin_Nhanvien'])) {
             unset($_SESSION['isLogin_Nhanvien']);
             unset($_SESSION['login']);
         }
-        if(isset($_SESSION['isLogin'])){
+        if (isset($_SESSION['isLogin'])) {
             unset($_SESSION['isLogin']);
             unset($_SESSION['login']);
         }
         header('location: ?act=home');
     }
+
     function check_account()
     {
-        $query =  "SELECT * from NguoiDung";
+        $query = "SELECT * from NguoiDung";
 
         require("result.php");
 
         return $data;
     }
+
     function dangky_action($data, $check1, $check2)
     {
         if ($check1 == 0) {
@@ -71,7 +79,8 @@ class Login extends Model
                 $v = trim($v, ",");
                 $query = "INSERT INTO NguoiDung($f) VALUES ($v);";
 
-                $status = $this->conn->query($query);
+                $cmd = $this->conn->prepare($query);
+                $status = $cmd->execute();
                 if ($status == true) {
                     setcookie('msg', 'Đăng ký thành công', time() + 2);
                 } else {
@@ -85,11 +94,16 @@ class Login extends Model
         }
         header('Location: ?act=taikhoan#dangky');
     }
+
     function account()
     {
         $id = $_SESSION['login']['MaND'];
-        return $this->conn->query("SELECT * from NguoiDung where MaND = $id")->fetch_assoc();
+        $query = "SELECT * from NguoiDung where MaND = $id";
+        $cmd = $this->conn->prepare($query);
+        $cmd->execute();
+        return $cmd->fetch();
     }
+
     function update_account($data)
     {
         $v = "";
@@ -100,8 +114,10 @@ class Login extends Model
 
         $query = "UPDATE NguoiDung SET  $v   WHERE  MaND = " . $_SESSION['login']['MaND'];
 
-        $result = $this->conn->query($query);
-        
+        $cmd = $this->conn->prepare($query);
+        $result = $cmd->execute();
+
+
         if ($result == true) {
             setcookie('doimk', 'Cập nhật tài khoản thành công', time() + 2);
             header('Location: ?act=taikhoan&xuli=account#doitk');
@@ -110,6 +126,7 @@ class Login extends Model
             header('Location: ?act=taikhoan&xuli=account#doitk');
         }
     }
+
     function error()
     {
         header('location: ?act=errors');

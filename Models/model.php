@@ -5,8 +5,8 @@ class model
     var $conn;
     function __construct()
     {
-        $conn_obj = new connection();
-        $this->conn = $conn_obj->conn;
+        $database = new Database(null, null, null, null);
+        $this->conn = $database->getConnect();
     }
     function limit($a, $b)
     {

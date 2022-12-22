@@ -8,7 +8,7 @@ class HomeController
        $this->home_model = new Home();
     }
     
-    function list()
+    public function list()
     {
         $data_danhmuc = $this->home_model->danhmuc();
 
